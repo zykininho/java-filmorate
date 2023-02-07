@@ -7,6 +7,10 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -60,7 +64,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new FilmController();
+        controller = new FilmController(new FilmService(new InMemoryFilmStorage()));
         film = Film.builder()
                 .name("Супер боевик")
                 .description("Пятеро друзей ( комик-группа «Шарло»), приезжают в город Бризуль. " +
