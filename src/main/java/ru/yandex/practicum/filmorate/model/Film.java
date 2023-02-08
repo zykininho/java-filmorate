@@ -18,4 +18,12 @@ public class Film {
     private LocalDate releaseDate;
     private long duration;
     private Set<Integer> likesByUsers; // список пользователей, кто поставил лайк
+
+    public void addLike(Integer userId) {
+        this.likesByUsers.add(userId);
+    }
+
+    public void deleteLike(Integer userId) {
+        this.likesByUsers.remove(userId);
+    }
 }

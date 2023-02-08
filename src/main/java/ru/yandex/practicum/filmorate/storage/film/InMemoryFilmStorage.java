@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +30,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film create(Film film) {
         validate(film);
         film.setId(++this.id);
+        if (film.getLikesByUsers() == null) {
+            film.setLikesByUsers(new HashSet<Integer>());
+        }
         films.put(film.getId(), film);
         log.debug("Добавлен новый фильм: {}", film);
         return film;
@@ -42,9 +46,21 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.debug("Не найден фильм в списке с id: {}", filmId);
             throw new NotFoundException();
         }
+        if (film.getLikesByUsers() == null) {
+            film.setLikesByUsers(new HashSet<Integer>());
+        }
         films.put(filmId, film);
         log.debug("Обновлены данные фильма с id {}. Новые данные: {}", filmId, film);
         return film;
+    }
+
+    @Override
+    public Film getFilmById(Integer filmId) {
+        if (films.containsKey(filmId)) {
+            return films.get(filmId);
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     private static void validate(Film film) {
@@ -65,5 +81,32 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.debug("Продолжительность фильма {} отрицательная", name);
             throw new ValidationException();
         }
+    }
+
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
+        film.addLike(userId);
+        update(film);
+    }
+
+    @Override
+    public void deleteLike(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
+        film.deleteLike(userId);
+        update(film);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count) {
+        return films.values().stream()
+                .sorted((f0, f1) -> compare(f0, f1))
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    private int compare(Film f0, Film f1) {
+        int result = f1.getLikesByUsers().size() - f0.getLikesByUsers().size();
+        return result;
     }
 }

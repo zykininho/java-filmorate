@@ -7,9 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +33,9 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Для пользователя с логином {} установлено новое имя {}", login, user.getName());
         }
         user.setId(++this.id);
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<Integer>());
+        }
         users.put(user.getId(), user);
         log.debug("Добавлен новый пользователь: {}", user);
         return user;
@@ -48,9 +49,21 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Не найден пользователь в списке с id: {}", userId);
             throw new NotFoundException();
         }
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<Integer>());
+        }
         users.put(userId, user);
         log.debug("Обновлены данные пользователя с id {}. Новые данные: {}", userId, user);
         return user;
+    }
+
+    @Override
+    public User getUserById(Integer userId) {
+        if (users.containsKey(userId)) {
+            return users.get(userId);
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     private static void validate(User user) {
@@ -67,5 +80,52 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Дата рождения пользователя с логином {} указана будущим числом", login);
             throw new ValidationException();
         }
+    }
+
+    @Override
+    public List<User> addToFriends(Integer userId, Integer friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        user.addFriend(friendId);
+        friend.addFriend(userId);
+        update(user);
+        update(friend);
+        Set<Integer> friendsId = user.getFriends();
+        List<User> friends = new ArrayList<>();
+        for (Integer id : friendsId) {
+            friends.add(getUserById(id));
+        }
+        return friends;
+    }
+
+    @Override
+    public void deleteFromFriends(Integer userId, Integer friendId) {
+        User user = getUserById(userId);
+        user.deleteFromFriends(friendId);
+    }
+
+    @Override
+    public List<User> getFriends(Integer userId) {
+        List<User> friends = new ArrayList<>();
+        User user = getUserById(userId);
+        Set<Integer> friendsId = user.getFriends();
+        for (Integer friendId : friendsId) {
+            friends.add(getUserById(friendId));
+        }
+        return friends;
+    }
+
+    @Override
+    public List<User> getCommonFriends(Integer userId, Integer friendId) {
+        List<User> friends = new ArrayList<>();
+        User user = getUserById(userId);
+        Set<Integer> userFriendsId = user.getFriends();
+        User friend = getUserById(friendId);
+        Set<Integer> friendsId = friend.getFriends();
+        List<Integer> commonId = userFriendsId.stream().filter(friendsId::contains).collect(Collectors.toList());
+        for (Integer id : commonId) {
+            friends.add(getUserById(id));
+        }
+        return friends;
     }
 }

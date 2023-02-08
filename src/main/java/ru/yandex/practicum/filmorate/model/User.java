@@ -22,4 +22,12 @@ public class User {
     private String name;
     private LocalDate birthday;
     private Set<Integer> friends; // список друзей
+
+    public void addFriend(Integer friendId) {
+        this.friends.add(friendId);
+    }
+
+    public void deleteFromFriends(Integer friendId) {
+        this.friends.remove(friendId);
+    }
 }
