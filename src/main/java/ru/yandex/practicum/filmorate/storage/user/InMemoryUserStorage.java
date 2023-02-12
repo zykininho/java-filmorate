@@ -33,8 +33,8 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Для пользователя с логином {} установлено новое имя {}", login, user.getName());
         }
         user.setId(++this.id);
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<Integer>());
+        if (user.getFriendsWithStatus() == null) {
+            user.setFriendsWithStatus(new HashMap<>());
         }
         users.put(user.getId(), user);
         log.debug("Добавлен новый пользователь: {}", user);
@@ -49,8 +49,8 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Не найден пользователь в списке с id: {}", userId);
             throw new NotFoundException();
         }
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<Integer>());
+        if (user.getFriendsWithStatus() == null) {
+            user.setFriendsWithStatus(new HashMap<>());
         }
         users.put(userId, user);
         log.debug("Обновлены данные пользователя с id {}. Новые данные: {}", userId, user);
@@ -90,7 +90,7 @@ public class InMemoryUserStorage implements UserStorage {
         friend.addFriend(userId);
         update(user);
         update(friend);
-        Set<Integer> friendsId = user.getFriends();
+        Set<Integer> friendsId = user.getFriendsWithStatus().keySet();
         List<User> friends = new ArrayList<>();
         for (Integer id : friendsId) {
             friends.add(getUserById(id));
@@ -108,7 +108,7 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> getFriends(Integer userId) {
         List<User> friends = new ArrayList<>();
         User user = getUserById(userId);
-        Set<Integer> friendsId = user.getFriends();
+        Set<Integer> friendsId = user.getFriendsWithStatus().keySet();
         for (Integer friendId : friendsId) {
             friends.add(getUserById(friendId));
         }
@@ -119,9 +119,9 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
         List<User> friends = new ArrayList<>();
         User user = getUserById(userId);
-        Set<Integer> userFriendsId = user.getFriends();
+        Set<Integer> userFriendsId = user.getFriendsWithStatus().keySet();
         User friend = getUserById(friendId);
-        Set<Integer> friendsId = friend.getFriends();
+        Set<Integer> friendsId = friend.getFriendsWithStatus().keySet();
         List<Integer> commonId = userFriendsId.stream().filter(friendsId::contains).collect(Collectors.toList());
         for (Integer id : commonId) {
             friends.add(getUserById(id));

@@ -24,13 +24,13 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Integer> friends; // список друзей
     private Map<Integer, StatusOfFriendship> friendsWithStatus; // список друзей со статусом
 
     public void addFriend(Integer friendId) {
-        this.friends.add(friendId);
+        this.friendsWithStatus.put(friendId, StatusOfFriendship.NOT_APPROVED);
     }
+
     public void deleteFromFriends(Integer friendId) {
-        this.friends.remove(friendId);
+        this.friendsWithStatus.remove(friendId);
     }
 }
