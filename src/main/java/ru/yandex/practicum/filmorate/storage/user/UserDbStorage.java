@@ -167,17 +167,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> addToFriends(Integer userId, Integer friendId) {
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
         user.addFriend(friendId);
-        friend.addFriend(userId);
         update(user);
-        update(friend);
-        Set<Integer> friendsId = user.getFriends().keySet();
-        List<User> friends = new ArrayList<>();
-        for (Integer id : friendsId) {
-            friends.add(getUserById(id));
-        }
-        return friends;
+        return getFriends(userId); // вернём список всех друзей (включая нового друга с friendId) пользователя с userId
     }
 
     @Override
