@@ -2,12 +2,11 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.enums.Genre;
-import ru.yandex.practicum.filmorate.enums.Rating;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -21,8 +20,8 @@ public class Film {
     private LocalDate releaseDate;
     private long duration;
     private Set<Integer> likesByUsers; // список пользователей, кто поставил лайк
-    private Set<Genre> genre;
-    private Rating rating;
+    private Set<Integer> genre;
+    private Map<String, Integer> mpa;
 
     public void addLike(Integer userId) {
         this.likesByUsers.add(userId);
