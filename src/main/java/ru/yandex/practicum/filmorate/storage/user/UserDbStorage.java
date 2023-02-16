@@ -11,7 +11,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Connection;
@@ -53,10 +52,10 @@ public class UserDbStorage implements UserStorage {
         Map<Integer, Boolean> friendships = new HashMap<>();
         String sql = "select friend_id, status from friendships where user_id = ?";
         SqlRowSet friendshipRows = jdbcTemplate.queryForRowSet(sql, userId);
-        if (friendshipRows.next()) {
+        while (friendshipRows.next()) {
             friendships.put(friendshipRows.getInt("friend_id"), friendshipRows.getBoolean("status"));
         }
-        User user = User.builder()
+        return User.builder()
                 .id(userId)
                 .email(userRows.getString("email"))
                 .login(userRows.getString("login"))
@@ -64,7 +63,6 @@ public class UserDbStorage implements UserStorage {
                 .birthday(userRows.getDate("birthday").toLocalDate())
                 .friends(friendships)
                 .build();
-        return user;
     }
 
     @Override
@@ -146,8 +144,24 @@ public class UserDbStorage implements UserStorage {
             log.info("Не найден пользователь в списке с id: {}", userId);
             throw new NotFoundException();
         }
+        sqlQuery = "delete from friendships where user_id = ? ";
+        jdbcTemplate.update(sqlQuery, userId);
+        addFriendship(user);
         log.info("Обновлены данные пользователя с id {}. Новые данные: {}", userId, user);
         return user;
+    }
+
+    private void addFriendship(User user) {
+        String sqlQuery = "insert into friendships (user_id, friend_id, status) " +
+                "values (?, ?, ?)";
+        int userId = user.getId();
+        Map<Integer, Boolean> friends = user.getFriends();
+        for (Map.Entry<Integer, Boolean> friendship : friends.entrySet()) {
+            jdbcTemplate.update(sqlQuery,
+                    userId,
+                    friendship.getKey(),
+                    friendship.getValue());
+        }
     }
 
     @Override
@@ -167,6 +181,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> addToFriends(Integer userId, Integer friendId) {
         User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.addFriend(friendId);
         update(user);
         return getFriends(userId); // вернём список всех друзей (включая нового друга с friendId) пользователя с userId
@@ -175,6 +190,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void deleteFromFriends(Integer userId, Integer friendId) {
         User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.deleteFromFriends(friendId);
         update(user);
     }
@@ -182,9 +198,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getFriends(Integer userId) {
         List<User> friends = new ArrayList<>();
-        String sqlQuery = "select distinct friend_id from friendships where user_id = ? and status = true";
+        String sqlQuery = "select * from users where id in (select distinct friend_id id from friendships where user_id = ?)";
         SqlRowSet friendshipRows = jdbcTemplate.queryForRowSet(sqlQuery, userId);
-        if (friendshipRows.next()) {
+        while (friendshipRows.next()) {
             User user = makeUser(friendshipRows);
             friends.add(user);
             log.info("В список друзей добавлен пользователь: {}", user);
@@ -196,8 +212,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
         List<User> commonFriends = new ArrayList<>();
-        String sqlQuery = "select friend_id from friendships where user_id = ? and status = true and friend_id in " +
-            "(select distinct friend_id from friendships where user_id = ? and status = true)";
+        String sqlQuery = "select * from users where id in (select friend_id from friendships where user_id = ? and friend_id in " +
+            "(select distinct friend_id from friendships where user_id = ?))";
         SqlRowSet friendsRows = jdbcTemplate.queryForRowSet(sqlQuery, userId, friendId);
         if (friendsRows.next()) {
             User user = makeUser(friendsRows);
