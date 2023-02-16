@@ -3,7 +3,7 @@ Repository for Filmorate project.
 
 Entity-Relationship Diagram:
 
-![ERD of Filmorate](https://github.com/zykininho/java-filmorate/blob/main/Filmorate%20ERD%20v.2.jpg)
+![ERD of Filmorate](https://github.com/zykininho/java-filmorate/blob/main/Filmorate%20ERD%20v.4.jpg)
 
 Examples for SQL-queries:
 
