@@ -90,7 +90,7 @@ public class FilmDbStorage implements FilmStorage {
         Set<Integer> userLikes = new HashSet<>();
         String sql = "select user_id from likes where film_id = ?";
         SqlRowSet likesRows = jdbcTemplate.queryForRowSet(sql, filmId);
-        if (likesRows.next()) {
+        while (likesRows.next()) {
             userLikes.add(likesRows.getInt("user_id"));
         }
         return userLikes;

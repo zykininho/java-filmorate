@@ -37,11 +37,8 @@ public class UserDbStorage implements UserStorage {
         List<User> users = new ArrayList<>();
         String sql = "select * from users";
         SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql);
-        if (userRows.next()) {
+        while (userRows.next()) {
             users.add(makeUser(userRows));
-        } else {
-            log.info("В списке пользователей отсутствуют записи");
-            return users;
         }
         log.info("Количество пользователей в базе: {}", users.size());
         return users;
