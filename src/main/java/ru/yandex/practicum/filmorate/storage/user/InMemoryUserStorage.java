@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
@@ -19,7 +21,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> get() {
-        log.debug("Текущее количество пользователей: {}", users.size());
+        log.info("Текущее количество пользователей: {}", users.size());
         return users.values().parallelStream().collect(Collectors.toList());
     }
 
@@ -30,14 +32,14 @@ public class InMemoryUserStorage implements UserStorage {
         String login = user.getLogin();
         if (name == null || name.isEmpty()) {
             user.setName(login);
-            log.debug("Для пользователя с логином {} установлено новое имя {}", login, user.getName());
+            log.info("Для пользователя с логином {} установлено новое имя {}", login, user.getName());
         }
         user.setId(++this.id);
         if (user.getFriends() == null) {
             user.setFriends(new HashMap<>());
         }
         users.put(user.getId(), user);
-        log.debug("Добавлен новый пользователь: {}", user);
+        log.info("Добавлен новый пользователь: {}", user);
         return user;
     }
 
@@ -46,14 +48,14 @@ public class InMemoryUserStorage implements UserStorage {
         validate(user);
         int userId = user.getId();
         if (!users.containsKey(userId)) {
-            log.debug("Не найден пользователь в списке с id: {}", userId);
+            log.info("Не найден пользователь в списке с id: {}", userId);
             throw new NotFoundException();
         }
         if (user.getFriends() == null) {
             user.setFriends(new HashMap<>());
         }
         users.put(userId, user);
-        log.debug("Обновлены данные пользователя с id {}. Новые данные: {}", userId, user);
+        log.info("Обновлены данные пользователя с id {}. Новые данные: {}", userId, user);
         return user;
     }
 
@@ -71,13 +73,13 @@ public class InMemoryUserStorage implements UserStorage {
         String login = user.getLogin();
         LocalDate birthday = user.getBirthday();
         if (email == null || email.isEmpty() || !email.contains("@")) {
-            log.debug("Электронная почта не указана или не указан символ '@'");
+            log.info("Электронная почта не указана или не указан символ '@'");
             throw new ValidationException();
         } else if (login == null || login.isEmpty() || login.contains(" ")) {
-            log.debug("Логин пользователя с электронной почтой {} не указан или содержит пробел", email);
+            log.info("Логин пользователя с электронной почтой {} не указан или содержит пробел", email);
             throw new ValidationException();
         } else if (birthday.isAfter(LocalDate.now())) {
-            log.debug("Дата рождения пользователя с логином {} указана будущим числом", login);
+            log.info("Дата рождения пользователя с логином {} указана будущим числом", login);
             throw new ValidationException();
         }
     }
