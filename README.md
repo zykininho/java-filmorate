@@ -1,5 +1,5 @@
 # java-filmorate
-Repository for Filmorate project.
+Repository for Filmorate project. **You can save, search and review the movies your frieds and you like the most!**
 
 Entity-Relationship Diagram:
 
