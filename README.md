@@ -1,25 +1,25 @@
 # java-filmorate
-Repository for Filmorate project. **You can save, search and review the movies your frieds and you like the most!**
+Репозиторий проекта Filmorate. **Ты можешь сохранять, искать и просматривать фильмы, которые нравятся тебе и твоим друзьям больше всего!**
 
 Entity-Relationship Diagram:
 
 ![ERD of Filmorate](https://github.com/zykininho/java-filmorate/blob/main/Filmorate%20ERD%20v.4.jpg)
 
-Examples for SQL-queries:
+Примеры SQL-запросов:
 
-1. to get info about user with id=1
+1. получить информацию по пользователю с id=1
 
   *SELECT *
   FROM USER
   WHERE user_id = 1*
   
-2. to get likes from users for film with id=13
+2. узнать, кто поставил лайки среди друзей фильму с id=13
 
   *SELECT user_id
   FROM likes
   WHERE film_id = 13*
   
-3. to get films with rating 'PG'
+3. получить все фильмы с рейтингом 'PG'
 
   *SELECT f.name
   FROM film AS f
