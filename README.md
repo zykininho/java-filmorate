@@ -25,3 +25,7 @@ Entity-Relationship Diagram:
   FROM film AS f
   INNER JOIN rating AS r ON f.Rating_ID = r.Rating_ID
   WHERE r.name = 'PG'*
+
+----------------------------------------------------------------------------------
+
+Стек технологий, используемых в проекте: ***Java 11, H2 Database, Maven, Lombok***
